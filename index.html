@@ -86,9 +86,17 @@
     <input type="text" id="nama" placeholder="Nama Pekerjaan" required />
     <input type="text" id="area" placeholder="Area" required />
     <input type="text" id="tipe" placeholder="Tipe Pekerjaan" required />
+    <select id="shift" required>
+      <option value="" disabled selected>Pilih Shift</option>
+      <option value="Pagi">Pagi</option>
+      <option value="Siang">Siang</option>
+      <option value="Sore">Sore</option>
+      <option value="Malam">Malam</option>
+    </select>
     <input type="date" id="tanggal" required />
-    <input type="text" id="durasi" placeholder="Durasi Pengerjaan (jam)" required />
-    <input type="date" id="due" placeholder="Due Date" required />
+    <input type="time" id="jamMulai" required />
+    <input type="time" id="jamSelesai" required />
+    <input type="date" id="due" required />
     <input type="text" id="pembuat" placeholder="Pembuat Tugas" required />
     <input type="text" id="penerima" placeholder="Penerima Tugas" required />
     <button type="submit">➕ Tambah Tugas</button>
@@ -103,7 +111,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
   <script>
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyB9wOo2N7ZIutzUOr8KRoodJjJNYqXAtB4",
       authDomain: "task-apps-3301a.firebaseapp.com",
@@ -126,12 +133,21 @@
       const password = prompt("Masukkan password untuk menambah tugas:");
       if (password !== "1111") return alert("Password salah!");
 
+      const jamMulai = document.getElementById("jamMulai").value;
+      const jamSelesai = document.getElementById("jamSelesai").value;
+
+      const durasi = hitungDurasi(jamMulai, jamSelesai);
+      if (durasi < 0) return alert("Jam selesai tidak boleh lebih awal dari jam mulai!");
+
       const data = {
         nama: document.getElementById("nama").value,
         area: document.getElementById("area").value,
         tipe: document.getElementById("tipe").value,
+        shift: document.getElementById("shift").value,
         tanggal: document.getElementById("tanggal").value,
-        durasi: document.getElementById("durasi").value,
+        jamMulai,
+        jamSelesai,
+        durasi,
         due: document.getElementById("due").value,
         pembuat: document.getElementById("pembuat").value,
         penerima: document.getElementById("penerima").value,
@@ -143,7 +159,14 @@
       form.reset();
     });
 
-    // Tampilkan data dari Firebase, terbaru di atas
+    function hitungDurasi(jamMulai, jamSelesai) {
+      const [jm, mm] = jamMulai.split(":").map(Number);
+      const [js, ms] = jamSelesai.split(":").map(Number);
+      const mulai = jm * 60 + mm;
+      const selesai = js * 60 + ms;
+      return ((selesai - mulai) / 60).toFixed(2); // hasil jam
+    }
+
     db.ref("tasks").on("value", (snapshot) => {
       const tasks = snapshot.val();
       taskList.innerHTML = "";
@@ -157,7 +180,8 @@
             <strong>${task.nama}</strong>
             <small>📍 Area: ${task.area}</small>
             <small>📂 Tipe: ${task.tipe}</small>
-            <small>📅 Tanggal: ${task.tanggal} | Durasi: ${task.durasi} jam</small>
+            <small>⏱️ Shift: ${task.shift}</small>
+            <small>📅 Tanggal: ${task.tanggal} (${task.jamMulai} - ${task.jamSelesai}) | Durasi: ${task.durasi} jam</small>
             <small>⏰ Due: ${task.due}</small>
             <small>👤 ${task.pembuat} ➡️ ${task.penerima}</small>
             <button class="delete-btn" onclick="deleteTask('${id}')">Hapus</button>
