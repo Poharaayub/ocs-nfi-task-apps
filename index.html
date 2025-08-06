@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aplikasi Task</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f3f4f6;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    form {
+      background: #ffffff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+
+    input, select, button {
+      display: block;
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    #deleteAllBtn {
+      background-color: #f44336;
+      margin-top: -5px;
+    }
+
+    .task-card {
+      background: white;
+      padding: 1rem;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .task-card small {
+      color: gray;
+      display: block;
+    }
+
+    .delete-btn {
+      background: #e74c3c;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      float: right;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+  <h2>📝 OCS NFI Job Desk</h2>
+
+  <form id="taskForm">
+    <input type="text" id="nama" placeholder="Nama Pekerjaan" required />
+    <input type="text" id="area" placeholder="Area" required />
+    <input type="text" id="tipe" placeholder="Tipe Pekerjaan" required />
+    <input type="date" id="tanggal" required />
+    <input type="text" id="durasi" placeholder="Durasi Pengerjaan (jam)" required />
+    <input type="date" id="due" placeholder="Due Date" required />
+    <input type="text" id="pembuat" placeholder="Pembuat Tugas" required />
+    <input type="text" id="penerima" placeholder="Penerima Tugas" required />
+    <button type="submit">➕ Tambah Tugas</button>
+  </form>
+
+  <button id="deleteAllBtn">🗑️ Hapus Semua Tugas</button>
+
+  <div id="taskList"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyB9wOo2N7ZIutzUOr8KRoodJjJNYqXAtB4",
+      authDomain: "task-apps-3301a.firebaseapp.com",
+      databaseURL: "https://task-apps-3301a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "task-apps-3301a",
+      storageBucket: "task-apps-3301a.appspot.com",
+      messagingSenderId: "964789555266",
+      appId: "1:964789555266:web:23a982b2a2e3a7a58edddb",
+      measurementId: "G-LZZDCKQ5CM"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const form = document.getElementById("taskForm");
+    const taskList = document.getElementById("taskList");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const password = prompt("Masukkan password untuk menambah tugas:");
+      if (password !== "1111") return alert("Password salah!");
+
+      const data = {
+        nama: document.getElementById("nama").value,
+        area: document.getElementById("area").value,
+        tipe: document.getElementById("tipe").value,
+        tanggal: document.getElementById("tanggal").value,
+        durasi: document.getElementById("durasi").value,
+        due: document.getElementById("due").value,
+        pembuat: document.getElementById("pembuat").value,
+        penerima: document.getElementById("penerima").value,
+        timestamp: Date.now()
+      };
+
+      const newRef = db.ref("tasks").push();
+      newRef.set(data);
+      form.reset();
+    });
+
+    // Tampilkan data dari Firebase, terbaru di atas
+    db.ref("tasks").on("value", (snapshot) => {
+      const tasks = snapshot.val();
+      taskList.innerHTML = "";
+
+      if (tasks) {
+        const items = Object.entries(tasks).sort((a, b) => b[1].timestamp - a[1].timestamp);
+        items.forEach(([id, task]) => {
+          const card = document.createElement("div");
+          card.className = "task-card";
+          card.innerHTML = `
+            <strong>${task.nama}</strong>
+            <small>📍 Area: ${task.area}</small>
+            <small>📂 Tipe: ${task.tipe}</small>
+            <small>📅 Tanggal: ${task.tanggal} | Durasi: ${task.durasi} jam</small>
+            <small>⏰ Due: ${task.due}</small>
+            <small>👤 ${task.pembuat} ➡️ ${task.penerima}</small>
+            <button class="delete-btn" onclick="deleteTask('${id}')">Hapus</button>
+          `;
+          taskList.appendChild(card);
+        });
+      }
+    });
+
+    function deleteTask(id) {
+      const password = prompt("Masukkan password untuk menghapus tugas:");
+      if (password !== "1111") return alert("Password salah!");
+      db.ref("tasks/" + id).remove();
+    }
+
+    document.getElementById("deleteAllBtn").addEventListener("click", () => {
+      const password = prompt("Masukkan password untuk menghapus semua tugas:");
+      if (password !== "1111") return alert("Password salah!");
+
+      if (confirm("Yakin ingin menghapus SEMUA tugas?")) {
+        db.ref("tasks").remove();
+      }
+    });
+  </script>
+</body>
+</html>
