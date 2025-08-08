@@ -3,26 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Aplikasi Task</title>
+  <title>OCS NFI Task App</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 1rem;
       background: #f3f4f6;
     }
 
     h2 {
       text-align: center;
       color: #2c3e50;
+      margin: 1rem 0;
+    }
+
+    .page {
+      display: none;
+      padding: 1rem;
+    }
+
+    .active {
+      display: block;
     }
 
     form {
-      background: #ffffff;
+      background: white;
       padding: 1rem;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
     }
 
     input, select, button {
@@ -48,7 +56,7 @@
 
     #deleteAllBtn {
       background-color: #f44336;
-      margin-top: -5px;
+      margin-top: 1rem;
     }
 
     .task-card {
@@ -74,43 +82,118 @@
       cursor: pointer;
     }
 
-    .delete-btn:hover {
-      opacity: 0.85;
+    .selesai-btn {
+      background: #2196F3;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
+    .selesai {
+      background-color: #e0e0e0 !important;
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      background: white;
+      border-top: 1px solid #ccc;
+    }
+
+    nav button {
+      flex: 1;
+      padding: 1rem;
+      font-size: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    nav button.active {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .container {
+      padding-bottom: 80px;
     }
   </style>
 </head>
 <body>
-  <h2>📝 OCS NFI Job Desk</h2>
+  <div class="container">
 
-  <form id="taskForm">
-    <input type="text" id="nama" placeholder="Nama Pekerjaan" required />
-    <input type="text" id="area" placeholder="Area" required />
-    <input type="text" id="tipe" placeholder="Tipe Pekerjaan" required />
-    <select id="shift" required>
-      <option value="" disabled selected>Pilih Shift</option>
-      <option value="Pagi">Pagi</option>
-      <option value="Siang">Siang</option>
-      <option value="Sore">Sore</option>
-      <option value="Malam">Malam</option>
-    </select>
-    <input type="date" id="tanggal" required />
-    <input type="time" id="jamMulai" required />
-    <input type="time" id="jamSelesai" required />
-    <input type="date" id="due" required />
-    <input type="text" id="pembuat" placeholder="Pembuat Tugas" required />
-    <input type="text" id="penerima" placeholder="Penerima Tugas" required />
-    <button type="submit">➕ Tambah Tugas</button>
-  </form>
+    <!-- Halaman Input Tugas -->
+    <div id="inputPage" class="page active">
+      <h2>📥 Input Tugas</h2>
+      <form id="taskForm">
+        <input type="text" id="nama" placeholder="Nama Pekerjaan" required />
+        <input type="text" id="area" placeholder="Area" required />
+        <input type="text" id="tipe" placeholder="Tipe Pekerjaan" required />
+        <select id="shift" required>
+          <option value="" disabled selected>Pilih Shift</option>
+          <option value="Pagi">Pagi</option>
+          <option value="Siang">Siang</option>
+          <option value="Sore">Sore</option>
+          <option value="Malam">Malam</option>
+        </select>
+        <input type="date" id="tanggal" required />
+        <input type="time" id="jamMulai" required />
+        <input type="time" id="jamSelesai" required />
+        <input type="date" id="due" required />
 
-  <button id="deleteAllBtn">🗑️ Hapus Semua Tugas</button>
+        <!-- Dropdown Pembuat -->
+        <select id="pembuat" required>
+          <option value="" disabled selected>Pilih Pembuat Tugas</option>
+          <option value="Pohara Ayub">Pohara Ayub</option>
+          <option value="Sadulloh">Sadulloh</option>
+        </select>
 
-  <div id="taskList"></div>
+        <!-- Dropdown Penerima -->
+        <select id="penerima" required>
+          <option value="" disabled selected>Pilih Penerima Tugas</option>
+          <option value="Edi Ahmad Jubaedi">Edi Ahmad Jubaedi</option>
+          <option value="Saiful Bahri">Saiful Bahri</option>
+          <option value="Wahidin">Wahidin</option>
+          <option value="Amrullah">Amrullah</option>
+          <option value="Ade Surahman">Ade Surahman</option>
+          <option value="Siti Maemunah">Siti Maemunah</option>
+          <option value="Sulaiman">Sulaiman</option>
+          <option value="Muhammad Toni">Muhammad Toni</option>
+          <option value="M. Rifai">M. Rifai</option>
+        </select>
+
+        <button type="submit">Tambah Tugas</button>
+      </form>
+    </div>
+
+    <!-- Halaman Daftar Tugas -->
+    <div id="listPage" class="page">
+      <h2>📋 Daftar Tugas</h2>
+      <div id="taskList"></div>
+      <button id="deleteAllBtn">🗑️ Hapus Semua Tugas</button>
+    </div>
+
+  </div>
+
+  <!-- Bottom Bar -->
+  <nav>
+    <button onclick="showPage('inputPage')" id="btnInput" class="active">➕ Input</button>
+    <button onclick="showPage('listPage')" id="btnList">📋 Tugas</button>
+  </nav>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
   <script>
+    // Konfigurasi Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyB9wOo2N7ZIutzUOr8KRoodJjJNYqXAtB4",
       authDomain: "task-apps-3301a.firebaseapp.com",
@@ -118,16 +201,27 @@
       projectId: "task-apps-3301a",
       storageBucket: "task-apps-3301a.appspot.com",
       messagingSenderId: "964789555266",
-      appId: "1:964789555266:web:23a982b2a2e3a7a58edddb",
-      measurementId: "G-LZZDCKQ5CM"
+      appId: "1:964789555266:web:23a982b2a2e3a7a58edddb"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const form = document.getElementById("taskForm");
-    const taskList = document.getElementById("taskList");
+    // Navigasi Halaman
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
 
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      if (pageId === 'inputPage') {
+        document.getElementById('btnInput').classList.add('active');
+      } else {
+        document.getElementById('btnList').classList.add('active');
+      }
+    }
+
+    // Tambah Tugas
+    const form = document.getElementById("taskForm");
     form.addEventListener("submit", function(e) {
       e.preventDefault();
       const password = prompt("Masukkan password untuk menambah tugas:");
@@ -135,7 +229,6 @@
 
       const jamMulai = document.getElementById("jamMulai").value;
       const jamSelesai = document.getElementById("jamSelesai").value;
-
       const durasi = hitungDurasi(jamMulai, jamSelesai);
       if (durasi < 0) return alert("Jam selesai tidak boleh lebih awal dari jam mulai!");
 
@@ -151,12 +244,13 @@
         due: document.getElementById("due").value,
         pembuat: document.getElementById("pembuat").value,
         penerima: document.getElementById("penerima").value,
+        selesai: false,
         timestamp: Date.now()
       };
 
-      const newRef = db.ref("tasks").push();
-      newRef.set(data);
+      db.ref("tasks").push(data);
       form.reset();
+      alert("Tugas berhasil ditambahkan!");
     });
 
     function hitungDurasi(jamMulai, jamSelesai) {
@@ -164,9 +258,11 @@
       const [js, ms] = jamSelesai.split(":").map(Number);
       const mulai = jm * 60 + mm;
       const selesai = js * 60 + ms;
-      return ((selesai - mulai) / 60).toFixed(2); // hasil jam
+      return ((selesai - mulai) / 60).toFixed(2);
     }
 
+    // Tampilkan Tugas
+    const taskList = document.getElementById("taskList");
     db.ref("tasks").on("value", (snapshot) => {
       const tasks = snapshot.val();
       taskList.innerHTML = "";
@@ -176,15 +272,18 @@
         items.forEach(([id, task]) => {
           const card = document.createElement("div");
           card.className = "task-card";
+          if (task.selesai) card.classList.add("selesai");
+
           card.innerHTML = `
             <strong>${task.nama}</strong>
             <small>📍 Area: ${task.area}</small>
             <small>📂 Tipe: ${task.tipe}</small>
             <small>⏱️ Shift: ${task.shift}</small>
-            <small>📅 Tanggal: ${task.tanggal} (${task.jamMulai} - ${task.jamSelesai}) | Durasi: ${task.durasi} jam</small>
+            <small>📅 ${task.tanggal} (${task.jamMulai} - ${task.jamSelesai}) | Durasi: ${task.durasi} jam</small>
             <small>⏰ Due: ${task.due}</small>
             <small>👤 ${task.pembuat} ➡️ ${task.penerima}</small>
             <button class="delete-btn" onclick="deleteTask('${id}')">Hapus</button>
+            ${!task.selesai ? `<button class="selesai-btn" onclick="selesaikanTugas('${id}')">✅ Selesai</button>` : ""}
           `;
           taskList.appendChild(card);
         });
@@ -197,11 +296,16 @@
       db.ref("tasks/" + id).remove();
     }
 
+    function selesaikanTugas(id) {
+      const password = prompt("Masukkan password untuk menyelesaikan tugas:");
+      if (password !== "1111") return alert("Password salah!");
+      db.ref("tasks/" + id).update({ selesai: true });
+    }
+
     document.getElementById("deleteAllBtn").addEventListener("click", () => {
       const password = prompt("Masukkan password untuk menghapus semua tugas:");
       if (password !== "1111") return alert("Password salah!");
-
-      if (confirm("Yakin ingin menghapus SEMUA tugas?")) {
+      if (confirm("Yakin ingin menghapus semua tugas?")) {
         db.ref("tasks").remove();
       }
     });
